@@ -1,0 +1,35 @@
+// DAX measures for a Power BI version of this analysis (EUR).
+// Table name used below: Superstore. Adjust if your table is named differently.
+// The source data is in US dollars (Country = United States).
+
+USD to EUR Rate = 0.89          // update with the current ECB reference rate
+
+Total Sales EUR =
+SUM ( Superstore[Sales] ) * [USD to EUR Rate]
+
+Total Profit EUR =
+SUM ( Superstore[Profit] ) * [USD to EUR Rate]
+
+Profit Margin % =
+DIVIDE ( [Total Profit EUR], [Total Sales EUR], 0 )
+
+Total Orders =
+DISTINCTCOUNT ( Superstore[Order ID] )
+
+Sales Last Year EUR =
+CALCULATE ( [Total Sales EUR], SAMEPERIODLASTYEAR ( 'Date'[Date] ) )
+
+Sales YoY % =
+DIVIDE ( [Total Sales EUR] - [Sales Last Year EUR], [Sales Last Year EUR], 0 )
+
+Loss-Making Sub-Categories =
+VAR t =
+    ADDCOLUMNS (
+        VALUES ( Superstore[Sub-Category] ),
+        "p", [Total Profit EUR]
+    )
+RETURN
+    COUNTROWS ( FILTER ( t, [p] < 0 ) )
+
+// Format the EUR measures: Measure tools > Format > Currency > EUR
+// 'Date' is a calendar table you create with CALENDAR() and relate to Superstore[Order Date].
